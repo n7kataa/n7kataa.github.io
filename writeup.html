@@ -55,7 +55,7 @@
 
 <a class="back" href="index.html">&larr; back</a>
 
-<h1>Turning a camera detection into a map coordinate</h1>
+<h1>Turning a camera detection into a map coordinate.</h1>
 <p class="dek">DARPA Triage Challenge &middot; primary triage &middot; 2025&ndash;2026</p>
 
 <div class="note">
@@ -84,7 +84,7 @@ points straight down and the aircraft is level. Neither is true. The drone tilts
 move, and a few degrees of tilt moves the ground point meters away from where that
 formula puts it, while the answer still <em>looks</em> fine.</p>
 
-<h2>The method that works</h2>
+<h2>The method that works.</h2>
 
 <p>The fix is to stop treating the pixel as a position and start treating it as a
 <strong>direction</strong>. Everything after that is "bookkeeping" about what that direction
@@ -133,7 +133,7 @@ much as the detection does.</figcaption>
   <li>Add that offset to the drone's GPS position. Lowkey just trig at this part lol.</li>
 </ol>
 
-<h2>The decision I'd want to talk about</h2>
+<h2>The decision I'd want to talk about.</h2>
 
 <p>Step 4 needs a height. A barometer always gives you one, but it drifts from wind, pressure changes, etc. We learned this the hard way.. A laser
 rangefinder is accurate to centimeters, but it drops out over vegetation and in bright sun.</p>
