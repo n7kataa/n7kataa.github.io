@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Turning a camera detection into a map coordinate | Brea Nakata</title>
+<meta name="description" content="How a drone turns a person detected in a camera frame into a latitude and longitude.">
+<style>
+  :root{
+    --ink:#24301f;
+    --ink-soft:#6b665a;
+    --coral:#E67E30;
+    --gold-deep:#B9791A;
+    --rule:rgba(36,48,31,.18);
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --body:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:#FCF9E6;color:var(--ink);font-family:var(--body);
+       line-height:1.65;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:660px;margin:0 auto;padding:48px 24px 96px;}
+
+  .back{font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--ink-soft);
+        text-decoration:none;border-bottom:1px solid var(--rule);}
+  .back:hover{color:var(--gold-deep);}
+
+  h1{font-family:"Helvetica Neue",Arial,sans-serif;font-weight:800;font-size:clamp(28px,5vw,40px);
+     line-height:1.1;letter-spacing:-.02em;margin:34px 0 10px;}
+  .dek{font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--ink-soft);
+       text-transform:uppercase;margin:0 0 32px;}
+
+  h2{font-family:"Helvetica Neue",Arial,sans-serif;font-weight:800;font-size:20px;
+     margin:38px 0 12px;letter-spacing:-.01em;}
+  p{margin:0 0 16px;font-size:16.5px;}
+  ol{padding-left:22px;margin:0 0 16px;}
+  li{margin-bottom:8px;font-size:16.5px;}
+  strong{font-weight:650;}
+
+  .note{border-left:2px solid var(--coral);background:rgba(230,126,48,.06);
+        padding:14px 18px;margin:0 0 32px;font-size:14.5px;color:#3a4a30;}
+  .note p{margin:0;font-size:14.5px;}
+
+  figure{margin:26px 0;}
+  figcaption{font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);
+             margin-top:10px;line-height:1.5;}
+  svg{width:100%;height:auto;display:block;}
+
+  hr{border:0;border-top:1px solid var(--rule);margin:44px 0;}
+  .foot{font-family:var(--mono);font-size:12px;color:var(--ink-soft);}
+  a{color:var(--coral);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<a class="back" href="index.html">&larr; back</a>
+
+<h1>Turning a camera detection into a map coordinate</h1>
+<p class="dek">DARPA Triage Challenge &middot; primary triage &middot; 2025&ndash;2026</p>
+
+<div class="note">
+  <p>This describes the approach, not the implementation. The actual code is in a private
+  competition repository and the imagery is covered by a data agreement, so there's no
+  repo to link. Everything below is either public in the DARPA rules or general to the
+  problem.</p>
+</div>
+
+<h2>The problem.</h2>
+
+<p>A drone flies over a disaster scene. Its camera sees a person and a detection model
+draws a box around them. But a rescuer can't use pixels. They need coordinates they can
+walk to, and the gap between those two things is geometry, not machine learning.</p>
+
+<h2>Why the obvious answers fail.</h2>
+
+<p>The first instinct I had was to just report the drone's own GPS position. But at search
+altitude the camera sees a patch of ground tens of meters across, so the person could be
+anywhere within it. DARPA also prohibits hovering directly over casualties, so that option is
+closed anyway.</p>
+
+<p>The second instinct got slightly closer: measure how far the detection sits from the center of
+the frame, scale by altitude, offset from the drone. But this assumes the camera
+points straight down and the aircraft is level. Neither is true. The drone tilts to
+move, and a few degrees of tilt moves the ground point meters away from where that
+formula puts it, while the answer still <em>looks</em> fine.</p>
+
+<h2>The method that works</h2>
+
+<p>The fix is to stop treating the pixel as a position and start treating it as a
+<strong>direction</strong>. Everything after that is "bookkeeping" about what that direction
+means in each frame of reference.</p>
+
+<figure>
+<svg viewBox="0 0 660 290" xmlns="http://www.w3.org/2000/svg" role="img"
+     aria-label="Side view: a drone at altitude, a camera ray leaving it at an angle and striking the ground, and the horizontal offset from the drone to that point.">
+  <line x1="40" y1="240" x2="620" y2="240" stroke="#24301f" stroke-width="1.5"/>
+  <text x="46" y="258" font-family="ui-monospace,monospace" font-size="11" fill="#6b665a">ground plane</text>
+
+  <g stroke="#24301f" stroke-width="1.6" fill="none">
+    <line x1="150" y1="60" x2="210" y2="60"/>
+    <line x1="180" y1="60" x2="180" y2="72"/>
+    <circle cx="150" cy="60" r="7"/>
+    <circle cx="210" cy="60" r="7"/>
+  </g>
+  <text x="120" y="44" font-family="ui-monospace,monospace" font-size="11" fill="#24301f">drone (GPS known)</text>
+
+  <line x1="180" y1="60" x2="180" y2="240" stroke="#6b665a" stroke-width="1" stroke-dasharray="4 4"/>
+  <text x="188" y="158" font-family="ui-monospace,monospace" font-size="11" fill="#6b665a">height above</text>
+  <text x="188" y="172" font-family="ui-monospace,monospace" font-size="11" fill="#6b665a">ground (measured)</text>
+
+  <line x1="180" y1="72" x2="470" y2="240" stroke="#E67E30" stroke-width="2"/>
+  <text x="300" y="130" font-family="ui-monospace,monospace" font-size="11" fill="#E67E30">camera ray (from the pixel)</text>
+
+  <circle cx="470" cy="240" r="5" fill="#E67E30"/>
+  <text x="440" y="226" font-family="ui-monospace,monospace" font-size="11" fill="#24301f">casualty</text>
+
+  <line x1="180" y1="256" x2="470" y2="256" stroke="#B9791A" stroke-width="1.2"/>
+  <line x1="180" y1="250" x2="180" y2="262" stroke="#B9791A" stroke-width="1.2"/>
+  <line x1="470" y1="250" x2="470" y2="262" stroke="#B9791A" stroke-width="1.2"/>
+  <text x="270" y="276" font-family="ui-monospace,monospace" font-size="11" fill="#B9791A">horizontal offset &rarr; added to drone GPS</text>
+</svg>
+<figcaption>The pixel gives a direction, not a position. Where that direction meets the
+ground is the answer, so the height measurement and the aircraft's orientation matter just as
+much as the detection does.</figcaption>
+</figure>
+
+<ol>
+  <li>Pixel + lens calibration &rarr; a ray in the camera's frame.</li>
+  <li>Rotate by how the camera is mounted &rarr; the drone's frame.</li>
+  <li>Rotate by the aircraft's measured roll, pitch, and heading &rarr; world frame.</li>
+  <li>Intersect with the ground plane. This is where height enters, and where direction
+      becomes a distance.</li>
+  <li>Add that offset to the drone's GPS position. Lowkey just trig at this part lol.</li>
+</ol>
+
+<h2>The decision I'd want to talk about</h2>
+
+<p>Step 4 needs a height. A barometer always gives you one, but it drifts from wind, pressure changes, etc. We learned this the hard way.. A laser
+rangefinder is accurate to centimeters, but it drops out over vegetation and in bright sun.</p>
+
+<p>The tempting design was to fall back to the barometer when the rangefinder fails, so
+there's always an answer. But a confidently wrong coordinate sends a rescuer to empty
+ground, which is worse than no coordinate at all. So the pipeline declines to answer
+without a fresh rangefinder reading. Knowing when not to answer is also part of the
+system's job.</p>
+
+<hr>
+
+<p class="foot">Brea Nakata &middot; CS + AI, Northeastern &middot;
+<a href="index.html">portfolio</a></p>
+
+</div>
+</body>
+</html>
