@@ -291,13 +291,16 @@
             <a href="https://youtu.be/2BgfZGkDEJw" target="_blank" rel="noopener">flight demo (video) &rarr;</a></p>
         </div>
 
-        <!-- CARD 2 = the plant classifier. Swap the two placeholder hrefs when
+        <!-- CARD 2 = AI image detector. Swap the two placeholder hrefs when
              the Space is live and the repo is public. -->
         <div class="card">
-          <h3>Plant disease classifier</h3>
-          <p class="meta">pytorch &middot; image classification &middot; model evaluation</p>
-          <p>A leaf-disease classifier that reports 99% accuracy and an honest look at why
-             that number doesn't mean what it appears to. In progress.
+          <h3>Evaluating an AI-generated image detector</h3>
+          <p class="meta">pytorch &middot; resnet18 &middot; model evaluation</p>
+          <p>A model that tells real photos from AI-generated ones, and a close look at
+             where it breaks: on AI generators it never saw, and on images that get
+             compressed or resized. First finding: most real photos in the dataset were
+             enlarged from smaller images, so a model could spot "real" by blurriness
+             alone. In progress.
             <a class="soon" href="#">live demo (soon)</a> &middot; <a class="soon" href="#">code (soon)</a></p>
         </div>
 
