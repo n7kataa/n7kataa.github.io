@@ -71,7 +71,7 @@
 draws a box around them. But a rescuer can't use pixels. They need coordinates they can
 walk to, and the gap between those two things is geometry, not machine learning.</p>
 
-<h2>Why the obvious answers fail.</h2>
+<h2>Things that failed.</h2>
 
 <p>The first instinct I had was to just report the drone's own GPS position. But at search
 altitude the camera sees a patch of ground tens of meters across, so the person could be
@@ -84,9 +84,9 @@ points straight down and the aircraft is level. Neither is true. The drone tilts
 move, and a few degrees of tilt moves the ground point meters away from where that
 formula puts it, while the answer still <em>looks</em> fine.</p>
 
-<h2>The method that works.</h2>
+<h2>The method that worked.</h2>
 
-<p>The fix is to stop treating the pixel as a position and start treating it as a
+<p>The fix was to stop treating the pixel as a position and start treating it as a
 <strong>direction</strong>. Everything after that is "bookkeeping" about what that direction
 means in each frame of reference.</p>
 
@@ -130,7 +130,7 @@ much as the detection does.</figcaption>
   <li>Rotate by the aircraft's measured roll, pitch, and heading &rarr; world frame.</li>
   <li>Intersect with the ground plane. This is where height enters, and where direction
       becomes a distance.</li>
-  <li>Add that offset to the drone's GPS position. Lowkey just trig at this part lol.</li>
+  <li>Add that offset to the drone's GPS position. Lowkey just some trig at this part lol.</li>
 </ol>
 
 <h2>The decision I'd want to talk about.</h2>
