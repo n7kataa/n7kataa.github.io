@@ -136,11 +136,11 @@ much as the detection does.</figcaption>
 <h2>The decision I'd want to talk about.</h2>
 
 <p>Step 4 needs a height. A barometer always gives you one, but it drifts from wind, pressure changes, etc. We learned this the hard way.. A laser
-rangefinder is accurate to centimeters, but it drops out over vegetation and in bright sun.</p>
+rangefinder (lidar) was accurate to centimeters, but it drops out over vegetation and in bright sun.</p>
 
 <p>The tempting design was to fall back to the barometer when the rangefinder fails, so
 there's always an answer. But a confidently wrong coordinate sends a rescuer to empty
-ground, which is worse than no coordinate at all. So the pipeline declines to answer
+ground, which is worse than no coordinate at all. So I decided to have the pipeline decline to answer
 without a fresh rangefinder reading. Knowing when not to answer is also part of the
 system's job.</p>
 
